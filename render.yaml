@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: pythonmaster-api
+    env: web
+    plan: free
+    buildCommand: "mvn clean package -DskipTests"
+    startCommand: "java -jar target/pythonmaster-0.0.1-SNAPSHOT.jar"
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: pythonmaster-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: pythonmaster-db
+          property: username
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: pythonmaster-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+  - type: pserv
+    name: pythonmaster-db
+    plan: free
+    databaseName: pythonmaster
+    user: pythonmaster_user
