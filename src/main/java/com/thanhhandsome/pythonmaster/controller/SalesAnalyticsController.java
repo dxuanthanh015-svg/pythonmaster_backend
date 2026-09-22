@@ -6,6 +6,7 @@ import com.thanhhandsome.pythonmaster.dto.response.analytics.SalesAnalyticsRespo
 import com.thanhhandsome.pythonmaster.service.SalesAnalyticsUseCase;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -24,7 +25,7 @@ public class SalesAnalyticsController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<SalesAnalyticsResponse>> getSalesAnalytics(
-            @Valid @ModelAttribute SalesAnalyticsFilterRequest filter) {
+            @Valid @ParameterObject @ModelAttribute SalesAnalyticsFilterRequest filter) {
         SalesAnalyticsResponse data = salesAnalyticsUseCase.getAnalytics(
                 filter.getContestId(), filter.getFrom(), filter.getTo(), filter.getSaleId());
         return ResponseEntity.ok(ApiResponse.success("Lấy dữ liệu phân tích bán hàng thành công", data));

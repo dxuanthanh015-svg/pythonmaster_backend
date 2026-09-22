@@ -1,5 +1,7 @@
 package com.thanhhandsome.pythonmaster.dto.request.analytics;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -24,6 +26,8 @@ public class SalesAnalyticsFilterRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to;
     @Positive Long saleId;
 
+    @JsonIgnore
+    @Schema(hidden = true)
     @AssertTrue(message = "to phải lớn hơn hoặc bằng from")
     public boolean isValidDateRange() {
         return from == null || to == null || !to.isBefore(from);

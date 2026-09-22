@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class ThiSinhController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ThiSinhResponse>>> getThiSinhs(
-            @Valid @ModelAttribute ThiSinhFilterRequest filter) {
+            @Valid @ParameterObject @ModelAttribute ThiSinhFilterRequest filter) {
         return ResponseEntity.ok(
                 ApiResponse.success("Lấy danh sách thí sinh thành công", thiSinhService.getThiSinhs(filter))
         );
@@ -98,7 +99,7 @@ public class ThiSinhController {
      * Xuất danh sách thí sinh ra file Excel (.xlsx) theo bộ lọc đang chọn
      */
     @GetMapping("/export-excel")
-    public ResponseEntity<byte[]> exportExcel(@Valid @ModelAttribute ThiSinhFilterRequest filter) {
+    public ResponseEntity<byte[]> exportExcel(@Valid @ParameterObject @ModelAttribute ThiSinhFilterRequest filter) {
         byte[] bytes = thiSinhService.exportExcel(filter);
 
         return ResponseEntity.ok()

@@ -10,6 +10,7 @@ import com.thanhhandsome.pythonmaster.service.doitac.DoiTacService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class DoiTacController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<DoiTacResponse>>> getDoiTacs(
-            @Valid @ModelAttribute DoiTacFilterRequest filter) {
+            @Valid @ParameterObject @ModelAttribute DoiTacFilterRequest filter) {
         return ResponseEntity.ok(
                 ApiResponse.success("Lấy danh sách đối tác thành công", doiTacService.getDoiTacs(filter))
         );

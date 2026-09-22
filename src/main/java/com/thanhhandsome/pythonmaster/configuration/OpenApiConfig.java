@@ -19,18 +19,14 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI pythonMasterOpenAPI() {
-        // 1. Khai báo Server HTTPS trên Railway
-        Server railwayServer = new Server()
-                .url("https://pythonmasterbackend-production.up.railway.app")
-                .description("Railway Production HTTPS");
-
-        // 2. Khai báo Server Localhost để test dưới máy
-        Server localServer = new Server()
-                .url("http://localhost:2909")
-                .description("Local Development Environment");
+        // Server tương đối: Swagger gọi đúng origin đang mở trang (https trên Railway,
+        // localhost khi chạy máy) nên không dính mismatch http/https hay CORS.
+        Server currentServer = new Server()
+                .url("/")
+                .description("Current server");
 
         return new OpenAPI()
-                .servers(List.of(railwayServer, localServer)) // Thêm danh sách Servers vào đây
+                .servers(List.of(currentServer))
                 .info(new Info()
                         .title("Python Master API")
                         .description("REST API quản lý thí sinh, đối tác, dashboard và xác thực JWT.")
