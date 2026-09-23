@@ -135,7 +135,7 @@ public class DashboardController {
 
     private String resolveRegion(String province) {
         String normalized = Normalizer.normalize(province, Normalizer.Form.NFD)
-                .replaceAll("\p{M}", "")
+                .replaceAll("\\p{M}", "")
                 .replace('đ', 'd')
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]+", " ")
