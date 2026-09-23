@@ -71,4 +71,26 @@ public interface DangKyRepository extends JpaRepository<DangKy, Long> {
                                @Param("from") LocalDateTime from,
                                @Param("to") LocalDateTime to,
                                @Param("saleId") Long saleId);
+
+    /**
+     * Thống kê theo tỉnh: số đăng ký và số đã thanh toán thành công.
+     * Một đăng ký có paymentStatus là paid hoặc completed được xác nhận tham gia.
+     */
+    @Query("""
+            select d.thiSinh.tinhThanh,
+                   count(d),
+                   sum(case when lower(t.paymentStatus) in ('paid', 'completed') then 1 else 0 end)
+            from DangKy d
+            left join d.thanhToan t
+            where (:contestId is null or d.cuocThi.id = :contestId)
+              and (:from is null or d.ngayDangKy >= :from)
+              and (:to is null or d.ngayDangKy < :to)
+              and (:saleId is null or d.thiSinh.assignedSale.id = :saleId)
+            group by d.thiSinh.tinhThanh
+            order by count(d) desc
+            """)
+    List<Object[]> countProvinceParticipation(@Param("contestId") Long contestId,
+                                              @Param("from") LocalDateTime from,
+                                              @Param("to") LocalDateTime to,
+                                              @Param("saleId") Long saleId);
 }
