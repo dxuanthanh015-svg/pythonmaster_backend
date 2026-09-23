@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface ThiSinhRepository extends JpaRepository<ThiSinh, Long>, JpaSpec
     @Query("""
             select count(t) from ThiSinh t
             where t.createdAt >= :from and t.createdAt < :to
-              and (:saleId is null or t.assignedSale.id = :saleId)
+            and (:saleId is null or t.assignedSale.id = :saleId)
             """)
     long countLeads(@Param("from") LocalDateTime from,
                     @Param("to") LocalDateTime to,
@@ -23,8 +24,8 @@ public interface ThiSinhRepository extends JpaRepository<ThiSinh, Long>, JpaSpec
     @Query("""
             select count(t) from ThiSinh t
             where (:from is null or t.createdAt >= :from)
-              and (:to is null or t.createdAt < :to)
-              and (:saleId is null or t.assignedSale.id = :saleId)
+            and (:to is null or t.createdAt < :to)
+            and (:saleId is null or t.assignedSale.id = :saleId)
             """)
     long countDashboardLeads(@Param("from") LocalDateTime from,
                              @Param("to") LocalDateTime to,
@@ -33,8 +34,8 @@ public interface ThiSinhRepository extends JpaRepository<ThiSinh, Long>, JpaSpec
     @Query("""
             select t.tinhThanh, count(t) from ThiSinh t
             where (:from is null or t.createdAt >= :from)
-              and (:to is null or t.createdAt < :to)
-              and (:saleId is null or t.assignedSale.id = :saleId)
+            and (:to is null or t.createdAt < :to)
+            and (:saleId is null or t.assignedSale.id = :saleId)
             group by t.tinhThanh
             """)
     List<Object[]> countByTinhThanh(@Param("from") LocalDateTime from,
@@ -44,8 +45,8 @@ public interface ThiSinhRepository extends JpaRepository<ThiSinh, Long>, JpaSpec
     @Query("""
             select coalesce(t.truongHoc, 'Khác'), count(t) from ThiSinh t
             where (:from is null or t.createdAt >= :from)
-              and (:to is null or t.createdAt < :to)
-              and (:saleId is null or t.assignedSale.id = :saleId)
+            and (:to is null or t.createdAt < :to)
+            and (:saleId is null or t.assignedSale.id = :saleId)
             group by coalesce(t.truongHoc, 'Khác')
             order by count(t) desc
             """)
@@ -59,4 +60,7 @@ public interface ThiSinhRepository extends JpaRepository<ThiSinh, Long>, JpaSpec
             order by t.truongHoc asc
             """)
     List<String> findDistinctTruongHoc();
+
+    @Query("select t.ngaySinh from ThiSinh t where t.ngaySinh is not null")
+    List<LocalDate> findAllNgaySinh();
 }
