@@ -8,6 +8,7 @@ import com.thanhhandsome.pythonmaster.dto.response.dashboard.DashboardKpiRespons
 import com.thanhhandsome.pythonmaster.dto.response.dashboard.DashboardRevenueResponse;
 import com.thanhhandsome.pythonmaster.dto.response.dashboard.DashboardTopPartnersResponse;
 import com.thanhhandsome.pythonmaster.dto.response.dashboard.DashboardTrendResponse;
+import com.thanhhandsome.pythonmaster.repository.ThiSinhRepository;
 import com.thanhhandsome.pythonmaster.service.DashboardUseCase;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,12 +21,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @RequiredArgsConstructor
 @Tag(name = "Dashboard", description = "KPI, funnel, demographics, partners, trend, revenue")
 public class DashboardController {
+
     private final DashboardUseCase dashboardUseCase;
+    private final ThiSinhRepository thiSinhRepository;
 
     /** Các KPI tổng quan: đăng ký, tỷ lệ chuyển đổi, doanh thu, lead follow-up, target gap */
     @GetMapping("/kpis")
@@ -41,8 +49,7 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<DashboardFunnelResponse>> getConversionFunnel(
             @Valid @ParameterObject @ModelAttribute DashboardFilterRequest filter) {
         return ResponseEntity.ok(
-                ApiResponse.success("Lấy dữ liệu phễu chuyển đổi thành công",
-                        dashboardUseCase.getConversionFunnel(filter))
+                ApiResponse.success("Lấy dữ liệu phễu chuyển đổi thành công", dashboardUseCase.getConversionFunnel(filter))
         );
     }
 
@@ -51,9 +58,34 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<DashboardDemographicsResponse>> getDemographics(
             @Valid @ParameterObject @ModelAttribute DashboardFilterRequest filter) {
         return ResponseEntity.ok(
-                ApiResponse.success("Lấy dữ liệu nhân khẩu học thành công",
-                        dashboardUseCase.getDemographics(filter))
+                ApiResponse.success("Lấy dữ liệu nhân khẩu học thành công", dashboardUseCase.getDemographics(filter))
         );
+    }
+
+    /** Thống kê thí sinh theo nhóm tuổi, dựa trên ngày sinh hiện tại. */
+    @GetMapping("/age-groups")
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getAgeGroups() {
+        LocalDate today = LocalDate.now();
+        Map<String, Long> groups = new LinkedHashMap<>();
+        groups.put("under15", 0L);
+        groups.put("15to17", 0L);
+        groups.put("18to20", 0L);
+        groups.put("over20", 0L);
+
+        for (LocalDate birthDate : thiSinhRepository.findAllNgaySinh()) {
+            int age = Period.between(birthDate, today).getYears();
+            if (age < 15) {
+                groups.compute("under15", (key, count) -> count + 1);
+            } else if (age <= 17) {
+                groups.compute("15to17", (key, count) -> count + 1);
+            } else if (age <= 20) {
+                groups.compute("18to20", (key, count) -> count + 1);
+            } else {
+                groups.compute("over20", (key, count) -> count + 1);
+            }
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("Lấy thống kê nhóm tuổi thành công", groups));
     }
 
     /** Top đối tác/đơn vị giới thiệu nhiều thí sinh nhất */
@@ -62,8 +94,7 @@ public class DashboardController {
             @Valid @ParameterObject @ModelAttribute DashboardFilterRequest filter,
             @RequestParam(required = false, defaultValue = "10") Integer limit) {
         return ResponseEntity.ok(
-                ApiResponse.success("Lấy dữ liệu top đối tác thành công",
-                        dashboardUseCase.getTopPartners(filter, limit))
+                ApiResponse.success("Lấy dữ liệu top đối tác thành công", dashboardUseCase.getTopPartners(filter, limit))
         );
     }
 
@@ -72,8 +103,7 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<DashboardTrendResponse>> getRegistrationTrend(
             @Valid @ParameterObject @ModelAttribute DashboardFilterRequest filter) {
         return ResponseEntity.ok(
-                ApiResponse.success("Lấy dữ liệu xu hướng đăng ký thành công",
-                        dashboardUseCase.getRegistrationTrend(filter))
+                ApiResponse.success("Lấy dữ liệu xu hướng đăng ký thành công", dashboardUseCase.getRegistrationTrend(filter))
         );
     }
 
@@ -82,8 +112,7 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<DashboardRevenueResponse>> getRevenue(
             @Valid @ParameterObject @ModelAttribute DashboardFilterRequest filter) {
         return ResponseEntity.ok(
-                ApiResponse.success("Lấy dữ liệu doanh thu thành công",
-                        dashboardUseCase.getRevenue(filter))
+                ApiResponse.success("Lấy dữ liệu doanh thu thành công", dashboardUseCase.getRevenue(filter))
         );
     }
 }
