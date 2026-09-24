@@ -1,8 +1,7 @@
-# Deploy lên Render - Hướng dẫn
+# Deploy lên Railway - Hướng dẫn
 
 ## Các file đã tạo:
 - ✅ `Dockerfile` - Build Docker image
-- ✅ `render.yaml` - Cấu hình Render services
 - ✅ `application-prod.properties` - Config production
 - ✅ `.dockerignore` - Bỏ các file không cần thiết
 
@@ -13,52 +12,56 @@
 git add .
 
 # Commit
-git commit -m "Add Dockerfile and render.yaml for Render deployment with MySQL"
+git commit -m "Add Dockerfile for Railway deployment with MySQL"
 
 # Push lên GitHub
 git push origin main
-```
 
-## Bước 5: Deploy trên Render
+Bước 5: Deploy trên Railway
+Cách 1: Deploy qua GitHub Repository (Khuyên dùng)
+Đăng nhập railway.app
 
-### Cách 1: Dùng Blueprint (Khuyên dùng)
-1. Đăng nhập [render.com](https://render.com)
-2. Click "New +" → "New Blueprint Instance"
-3. Connect GitHub repo của bạn
-4. Render sẽ tự động đọc `render.yaml`
-5. Review configuration:
-   - Web Service: pythonmaster-api
-   - Database: pythonmaster-db (MySQL Free)
-6. Click "Create Blueprint Instance"
+Click "New Project" → Chọn "Deploy from GitHub repo" và chọn repository của bạn.
 
-### Cách 2: Tạo thủ công
-1. Đăng nhập [render.com](https://render.com)
-2. Tạo MySQL Database:
-   - "New +" → "PostgreSQL" → chọn "MySQL"
-   - Name: pythonmaster-db
-   - Database: pythonmaster
-   - User: pythonmaster_user
-   - Plan: Free
-3. Tạo Web Service:
-   - "New +" → "Web Service"
-   - Connect GitHub repo
-   - Runtime: Docker
-   - Dockerfile path: `./Dockerfile`
-   - Environment Variables:
-     - `SPRING_DATASOURCE_URL`: lấy từ database
-     - `SPRING_DATASOURCE_USERNAME`: lấy từ database
-     - `SPRING_DATASOURCE_PASSWORD`: lấy từ database
-     - `JWT_SECRET`: tự generate
-     - `SPRING_PROFILES_ACTIVE`: prod
+Thêm MySQL Database vào cùng Project:
 
-## Sau khi deploy:
+Trong giao diện Project, click "+ New" → chọn "Database" → chọn "Add MySQL".
 
-### URL truy cập:
-- API: `https://pythonmaster-api.onrender.com`
-- Swagger UI: `https://pythonmaster-api.onrender.com/swagger-ui.html`
+Cấu hình biến môi trường (Environment Variables):
 
+Click vào thẻ Web Service của bạn → chuyển sang tab "Variables".
+
+Thêm các biến môi trường sau (trỏ trực tiếp từ MySQL của Railway):
+
+SPRING_DATASOURCE_URL: jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}?useSSL=false&allowPublicKeyRetrieval=true
+
+SPRING_DATASOURCE_USERNAME: ${{MySQL.MYSQLUSER}}
+
+SPRING_DATASOURCE_PASSWORD: ${{MySQL.MYSQLPASSWORD}}
+
+JWT_SECRET: tự generate
+
+SPRING_PROFILES_ACTIVE: prod
+
+Tạo Domain công khai:
+
+Vào tab "Settings" của Web Service → Tìm mục "Networking" / "Public Networking".
+
+Click "Generate Domain" để nhận URL truy cập public (dạng .up.railway.app).
+
+Sau khi deploy:
+URL truy cập:
+API: https://pythonmaster-api.up.railway.app
+
+Swagger UI: https://pythonmaster-api.up.railway.app/swagger-ui.html
 ### Test kết nối:
-```bash
+# Test health
+curl [https://pythonmaster-api.up.railway.app/swagger-ui.html](https://pythonmaster-api.up.railway.app/swagger-ui.html)
+
+# Test login
+curl -X POST [https://pythonmaster-api.up.railway.app/api/v1/auth/login](https://pythonmaster-api.up.railway.app/api/v1/auth/login) \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
 # Test health
 curl https://pythonmaster-api.onrender.com/swagger-ui.html
 
@@ -74,13 +77,19 @@ curl -X POST https://pythonmaster-api.onrender.com/api/v1/auth/login \
 - Bạn cần import lại Excel data qua API hoặc upload file
 
 ## Chi phí:
-- Web Service: Free (512 MB RAM, 0.1 CPU)
-- MySQL Database: Free (1 GB storage)
-- **Tổng: $0/tháng**
+- Railway tặng $5 free trial credits/tháng (hoặc $5/tháng gói Hobby).
+
+- Đủ tài nguyên cho 1 Web Service + 1 MySQL Database hoạt động mượt mà.
+
+- Tổng: ~$0/tháng (trong hạn mức credits tặng kèm).
 
 ## Lưu ý:
-1. **Sleep mode**: Free tier sleep sau 15 phút không hoạt động
-2. **Awake time**: Lần truy cập đầu tiên mất ~30s
-3. **Database**: MySQL free tier giới hạn 1 GB
-4. **SSL**: Render tự động cung cấp HTTPS
-5. **Logs**: Check Dashboard → pythonmaster-api → Logs
+- Không Sleep: Railway không ngủ (no sleep) sau 15 phút ngưng hoạt động như Render. Server chạy liên tục 24/7.
+
+- Khởi động tức thì: Không mất ~30s chờ server tỉnh dậy ở lần request đầu tiên.
+
+- Domain custom: Phải bấm Generate Domain trong tab Settings để cấp domain công khai .up.railway.app.
+
+- SSL: Railway tự động cung cấp chứng chỉ HTTPS cho mọi domain public.
+
+- Logs: Check Dashboard → Chọn Web Service → Xem log thời gian thực tại tab Deployments / Logs.
